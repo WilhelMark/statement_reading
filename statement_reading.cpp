@@ -1,15 +1,7 @@
 ﻿#include <iostream>
 #include <fstream>
-#include <vector>
 #include <string>
-
-// Structure to store payment information
-struct Payment {
-    std::string firstName;
-    std::string lastName;
-    double amount;
-    std::string date;
-};
+#include <sstream>
 
 int main() {
     std::string filePath;
@@ -22,34 +14,31 @@ int main() {
         return 1;
     }
 
-    std::vector<Payment> payments;
-    Payment currentPayment;
-    
-    // Read and parse each line from the file
-    while (inputFile >> currentPayment.firstName 
-                     >> currentPayment.lastName 
-                     >> currentPayment.amount 
-                     >> currentPayment.date) {
-        payments.push_back(currentPayment);
-    }
+    double total = 0.0;
+    double maxAmount = 0.0;
+    std::string maxRecipient;
+    std::string lineBuffer;
 
-    double totalAmount = 0;
-    double maxPayment = 0;
-    std::string topRecipient;
+    // Stream-based processing
+    while (std::getline(inputFile, lineBuffer)) {
+        std::istringstream lineStream(lineBuffer);
+        std::string firstName, lastName, date;
+        double amount;
 
-    // Calculate total and find maximum payment
-    for (const auto& payment : payments) {
-        totalAmount += payment.amount;
-        if (payment.amount > maxPayment) {
-            maxPayment = payment.amount;
-            topRecipient = payment.firstName + " " + payment.lastName;
+        if (lineStream >> firstName >> lastName >> amount >> date) {
+            total += amount;
+            if (amount > maxAmount) {
+                maxAmount = amount;
+                maxRecipient = firstName + " " + lastName;
+            }
+        } else {
+            std::cerr << "Invalid format in line: " << lineBuffer << '\n';
         }
     }
 
-    // Display results
-    std::cout << "\nTotal payments: $" << totalAmount << std::endl;
-    std::cout << "Top recipient: " << topRecipient 
-              << " with $" << maxPayment << std::endl;
+    std::cout << "\nTotal payments: $" << total
+              << "\nTop recipient: " << maxRecipient 
+              << " ($" << maxAmount << ")\n";
 
     inputFile.close();
     return 0;
